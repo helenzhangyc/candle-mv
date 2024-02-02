@@ -467,6 +467,15 @@ impl<'a> VarBuilder<'a> {
         Ok(Self::new(Box::new(tensors), dtype, dev.clone()))
     }
 
+    pub fn from_multi_buffered_safetensors(
+        data: Vec<Vec<u8>>,
+        dtype: DType,
+        dev: &Device,
+    ) -> Result<Self> {
+        let tensors = candle::safetensors::BufferedSafetensors::multi(data)?;
+        Ok(Self::new(Box::new(tensors), dtype, dev.clone()))
+    }
+
     /// Initializes a `VarBuilder` that retrieves tensors stored in a numpy npz file.
     pub fn from_npz<P: AsRef<std::path::Path>>(p: P, dtype: DType, dev: &Device) -> Result<Self> {
         let npz = candle::npy::NpzTensors::new(p)?;

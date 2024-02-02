@@ -5,6 +5,9 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::path::Path;
 
+use std::collections::HashMap;
+use std::path::Path;
+
 impl From<DType> for st::Dtype {
     fn from(value: DType) -> Self {
         match value {
@@ -363,6 +366,29 @@ impl BufferedSafetensors {
                 Ok::<_, Error>(SafeTensors_(st))
             },
         )?;
+        Ok(Self { safetensors })
+    }
+
+    pub fn multi(buffers: Vec<Vec<u8>>) -> Result<Self> {
+        let mut routing = HashMap::new();
+        let mut safetensors = vec![];
+
+        for (index, buffer) in buffers.into_iter().enumerate() {
+            let data = yoke::Yoke::<SafeTensors_<'static>, Vec<u8>>::try_attach_to_cart(
+                buffer,
+                |data: &[u8]| {
+                    let st = safetensors::SafeTensors::deserialize(data)?;
+                    Ok::<_, Error>(SafeTensors_(st))
+                },
+            )?;
+
+            for k in data.get().0.names() {
+                routing.insert(k.to_string(), index);
+            }
+
+            safetensors.push(data);
+        }
+
         Ok(Self { safetensors })
     }
 
