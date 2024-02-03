@@ -383,8 +383,8 @@ impl BufferedSafetensors {
         Ok(Self { safetensors })
     }
 
-    pub fn load(&self, name: &str, dev: &Device, index: usize) -> Result<Tensor> {
-        self.get(name, index)?.load(dev)
+    pub fn load(&self, name: &str, dev: &Device) -> Result<Tensor> {
+        self.get(name)?.load(dev)
     }
 
     pub fn tensors(&self) -> Vec<(String, st::TensorView<'_>)> {
@@ -396,8 +396,8 @@ impl BufferedSafetensors {
         tensors.into_iter().flatten().collect()
     }
 
-    pub fn get(&self, name: &str, index: usize) -> Result<st::TensorView<'_>> {
-        Ok(self.safetensors[index].get().0.tensor(name)?)
+    pub fn get(&self, name: &str) -> Result<st::TensorView<'_>> {
+        Ok(self.safetensors[0].get().0.tensor(name)?)
     }
 }
 
