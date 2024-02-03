@@ -350,27 +350,27 @@ impl MmapedSafetensors {
 }
 
 pub struct BufferedSafetensors {
-    safetensors: yoke::Yoke<SafeTensors_<'static>, Vec<u8>>,
+    safetensors: Vec<yoke::Yoke<SafeTensors_<'static>, Vec<u8>>>,
 }
 
 impl BufferedSafetensors {
     /// Creates a wrapper around a binary buffer and deserialize the safetensors header.
     pub fn new(buffer: Vec<u8>) -> Result<Self> {
-        let safetensors = yoke::Yoke::<SafeTensors_<'static>, Vec<u8>>::try_attach_to_cart(
+        let mut safetensors = vec![];
+        let safetensors_element = yoke::Yoke::<SafeTensors_<'static>, Vec<u8>>::try_attach_to_cart(
             buffer,
             |data: &[u8]| {
                 let st = safetensors::SafeTensors::deserialize(data)?;
                 Ok::<_, Error>(SafeTensors_(st))
             },
         )?;
+        safetensors.push(safetensors_element);
         Ok(Self { safetensors })
     }
 
     pub fn multi(buffers: Vec<Vec<u8>>) -> Result<Self> {
-        let mut routing = HashMap::new();
         let mut safetensors = vec![];
-
-        for (index, buffer) in buffers.into_iter().enumerate() {
+        for buffer in buffers {
             let data = yoke::Yoke::<SafeTensors_<'static>, Vec<u8>>::try_attach_to_cart(
                 buffer,
                 |data: &[u8]| {
@@ -378,27 +378,26 @@ impl BufferedSafetensors {
                     Ok::<_, Error>(SafeTensors_(st))
                 },
             )?;
-
-            for k in data.get().0.names() {
-                routing.insert(k.to_string(), index);
-            }
-
-            safetensors.push(data);
+            safetensors.push(data)
         }
-
         Ok(Self { safetensors })
     }
 
-    pub fn load(&self, name: &str, dev: &Device) -> Result<Tensor> {
-        self.get(name)?.load(dev)
+    pub fn load(&self, name: &str, dev: &Device, index: usize) -> Result<Tensor> {
+        self.get(name, index)?.load(dev)
     }
 
     pub fn tensors(&self) -> Vec<(String, st::TensorView<'_>)> {
-        self.safetensors.get().0.tensors()
+        // self.safetensors.get().0.tensors()
+        let mut tensors = vec![];
+        for safetensors in self.safetensors.iter() {
+            tensors.push(safetensors.get().0.tensors())
+        }
+        tensors.into_iter().flatten().collect()
     }
 
-    pub fn get(&self, name: &str) -> Result<st::TensorView<'_>> {
-        Ok(self.safetensors.get().0.tensor(name)?)
+    pub fn get(&self, name: &str, index: usize) -> Result<st::TensorView<'_>> {
+        Ok(self.safetensors[index].get().0.tensor(name)?)
     }
 }
 
