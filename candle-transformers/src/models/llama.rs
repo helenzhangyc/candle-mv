@@ -5,6 +5,8 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+use std::time::{Duration, Instant};
+
 pub const MAX_SEQ_LEN: usize = 4096;
 
 #[derive(Deserialize)]
@@ -404,12 +406,35 @@ impl Llama {
     }
 
     pub fn load(vb: VarBuilder, cache: &Cache, cfg: &Config) -> Result<Self> {
+        let mut tmp_time = Instant::now();
         let wte = embedding(cfg.vocab_size, cfg.hidden_size, vb.pp("model.embed_tokens"))?;
+        println!(
+            "Time to initialize wte {:?}",
+            tmp_time.elapsed().as_secs_f64()
+        );
+
+        tmp_time = Instant::now();
         let lm_head = linear(cfg.hidden_size, cfg.vocab_size, vb.pp("lm_head"))?;
+        println!(
+            "Time to initialize lm_head {:?}",
+            tmp_time.elapsed().as_secs_f64()
+        );
+
+        tmp_time = Instant::now();
         let ln_f = RmsNorm::load(cfg.hidden_size, cfg.rms_norm_eps, vb.pp("model.norm"))?;
+        println!(
+            "Time to initialize ln_f {:?}",
+            tmp_time.elapsed().as_secs_f64()
+        );
+
+        tmp_time = Instant::now();
         let blocks: Vec<_> = (0..cfg.num_hidden_layers)
             .map(|i| Block::load(vb.pp(&format!("model.layers.{i}")), cache, cfg).unwrap())
             .collect();
+        println!(
+            "Time to initialize blocks {:?}",
+            tmp_time.elapsed().as_secs_f64()
+        );
 
         Ok(Self {
             wte,
