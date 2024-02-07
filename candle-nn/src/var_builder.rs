@@ -236,6 +236,40 @@ impl SimpleBackend for HashMap<String, Tensor> {
     }
 }
 
+impl SimpleBackend for HashMap<String, TensorView<'_>> {
+    fn get(
+        &self,
+        s: Shape,
+        name: &str,
+        _: crate::Init,
+        dtype: DType,
+        dev: &Device,
+    ) -> Result<Tensor> {
+        let tensor = self
+            .get(name)
+            .ok_or_else(|| {
+                Error::CannotFindTensor {
+                    path: name.to_string(),
+                }
+                .bt()
+            })?
+            .load(dev)?;
+        if tensor.shape() != &s {
+            Err(candle::Error::UnexpectedShape {
+                msg: format!("shape mismatch for {name}"),
+                expected: s,
+                got: tensor.shape().clone(),
+            }
+            .bt())?
+        }
+        tensor.to_dtype(dtype)
+    }
+
+    fn contains_tensor(&self, name: &str) -> bool {
+        self.contains_key(name)
+    }
+}
+
 impl SimpleBackend for VarMap {
     fn get(
         &self,
@@ -437,7 +471,7 @@ impl<'a> VarBuilder<'a> {
     }
 
     pub fn from_tensorview(
-        ts: HashMap<String, TensorView<'_>>,
+        ts: HashMap<String, TensorView<'a>>,
         dtype: DType,
         dev: &Device,
     ) -> Self {
