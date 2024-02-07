@@ -293,6 +293,12 @@ impl CausalSelfAttention {
         let k_proj = linear(size_in, size_kv, vb.pp("k_proj"))?;
         let v_proj = linear(size_in, size_kv, vb.pp("v_proj"))?;
         let o_proj = linear(size_q, size_in, vb.pp("o_proj"))?;
+
+        let start_time = Instant::now(); // Start measuring time
+        let cache_clone = cache.clone(); // Measure the time for cloning the cache
+        let elapsed = start_time.elapsed().as_secs_f64();
+        println!("cache clone time {:?}", elapsed);
+
         Ok(Self {
             q_proj,
             k_proj,
@@ -301,7 +307,8 @@ impl CausalSelfAttention {
             num_attention_heads: cfg.num_attention_heads,
             num_key_value_heads: cfg.num_key_value_heads,
             head_dim: cfg.hidden_size / cfg.num_attention_heads,
-            cache: cache.clone(),
+            // cache: cache.clone(),
+            cache: cache_clone,
             use_flash_attn: cfg.use_flash_attn,
             span,
             span_rot,
