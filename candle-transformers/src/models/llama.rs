@@ -366,15 +366,42 @@ impl Block {
     }
 
     fn load(vb: VarBuilder, cache: &Cache, cfg: &Config) -> Result<Self> {
+        let mut tmp_time = Instant::now();
         let span = tracing::span!(tracing::Level::TRACE, "block");
+        println!(
+            "Time for initialize span {:?}",
+            tmp_time.elapsed().as_secs_f64()
+        );
+
+        tmp_time = Instant::now();
         let attn = CausalSelfAttention::load(vb.pp("self_attn"), cache, cfg)?;
+        println!(
+            "Time for initialize attn {:?}",
+            tmp_time.elapsed().as_secs_f64()
+        );
+
+        tmp_time = Instant::now();
         let mlp = Mlp::load(vb.pp("mlp"), cfg)?;
+        println!("Time for mlp load {:?}", tmp_time.elapsed().as_secs_f64());
+
+        tmp_time = Instant::now();
         let rms_1 = RmsNorm::load(cfg.hidden_size, cfg.rms_norm_eps, vb.pp("input_layernorm"))?;
+        println!(
+            "Time for rmsnorm load 1 {:?}",
+            tmp_time.elapsed().as_secs_f64()
+        );
+
+        tmp_time = Instant::now();
         let rms_2 = RmsNorm::load(
             cfg.hidden_size,
             cfg.rms_norm_eps,
             vb.pp("post_attention_layernorm"),
         )?;
+        println!(
+            "Time for rmsnorm load 2 {:?}",
+            tmp_time.elapsed().as_secs_f64()
+        );
+
         Ok(Self {
             rms_1,
             attn,
