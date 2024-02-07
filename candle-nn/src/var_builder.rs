@@ -3,7 +3,7 @@
 //! for training, e.g. using `VarBuilder::from_varmap`.
 use crate::VarMap;
 use candle::{safetensors::Load, DType, Device, Error, Result, Shape, Tensor};
-use safetensors::{slice::IndexOp, tensor::SafeTensors};
+use safetensors::{slice::IndexOp, tensor::SafeTensors, tensor::TensorView};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -433,6 +433,14 @@ impl<'a> VarBuilder<'a> {
     /// Initializes a `VarBuilder` that retrieves tensors stored in a hashtable. An error is
     /// returned if no tensor is available under the requested path or on shape mismatches.
     pub fn from_tensors(ts: HashMap<String, Tensor>, dtype: DType, dev: &Device) -> Self {
+        Self::new(Box::new(ts), dtype, dev.clone())
+    }
+
+    pub fn from_tensorview(
+        ts: HashMap<String, TensorView<'_>>,
+        dtype: DType,
+        dev: &Device,
+    ) -> Self {
         Self::new(Box::new(ts), dtype, dev.clone())
     }
 
