@@ -7,6 +7,8 @@ use safetensors::{slice::IndexOp, tensor::SafeTensors, tensor::TensorView};
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use std::time::{Duration, Instant};
+
 /// A structure used to retrieve variables, these variables can either come from storage or be
 /// generated via some form of initialization.
 ///
@@ -142,7 +144,13 @@ impl<'a, B: Backend> VarBuilderArgs<'a, B> {
 
     /// Short alias for `push_prefix`.
     pub fn pp<S: ToString>(&self, s: S) -> Self {
-        self.push_prefix(s)
+        let tmp_time = Instant::now();
+        let a = self.push_prefix(s);
+        println!(
+            "Time for push prefix {:?}",
+            tmp_time.elapsed().as_secs_f64()
+        );
+        return a;
     }
 
     /// The device used by default.
