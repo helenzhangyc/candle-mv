@@ -186,10 +186,17 @@ impl<'a, B: Backend> VarBuilderArgs<'a, B> {
         name: &str,
         hints: B::Hints,
     ) -> Result<Tensor> {
+        let start = Instant::now();
         let path = self.path(name);
-        self.data
-            .backend
-            .get(s.into(), &path, hints, self.data.dtype, &self.data.device)
+        let retval =
+            self.data
+                .backend
+                .get(s.into(), &path, hints, self.data.dtype, &self.data.device);
+        println!(
+            "Time for get_with_hints {:?}",
+            start.elapsed().as_secs_f64()
+        );
+        return retval;
     }
 
     /// Retrieve the tensor associated with the given name at the current path.
