@@ -260,6 +260,7 @@ impl SimpleBackend for HashMap<String, TensorView<'_>> {
         dtype: DType,
         dev: &Device,
     ) -> Result<Tensor> {
+        let start = Instant::now();
         let tensor = self
             .get(name)
             .ok_or_else(|| {
@@ -269,6 +270,10 @@ impl SimpleBackend for HashMap<String, TensorView<'_>> {
                 .bt()
             })?
             .load(dev)?;
+        println!(
+            "Time to load onto device {:?}",
+            start.elapsed().as_secs_f64()
+        );
         if tensor.shape() != &s {
             Err(candle::Error::UnexpectedShape {
                 msg: format!("shape mismatch for {name}"),
