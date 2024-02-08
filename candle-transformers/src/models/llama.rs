@@ -366,7 +366,6 @@ impl Block {
     }
 
     fn load(vb: VarBuilder, cache: &Cache, cfg: &Config) -> Result<Self> {
-        let mut tmp_time = Instant::now();
         let span = tracing::span!(tracing::Level::TRACE, "block");
         let attn = CausalSelfAttention::load(vb.pp("self_attn"), cache, cfg)?;
         let mlp = Mlp::load(vb.pp("mlp"), cfg)?;
