@@ -19,6 +19,8 @@
 //! ```
 use candle::{Result, Tensor};
 
+use std::time::{Duration, Instant};
+
 #[derive(Clone, Debug)]
 pub struct Linear {
     weight: Tensor,
@@ -72,6 +74,11 @@ pub fn linear(in_dim: usize, out_dim: usize, vs: crate::VarBuilder) -> Result<Li
 /// Create or initialize a new linear layer without biases.
 pub fn linear_no_bias(in_dim: usize, out_dim: usize, vs: crate::VarBuilder) -> Result<Linear> {
     let init_ws = crate::init::DEFAULT_KAIMING_NORMAL;
+    let start = Instant::now();
     let ws = vs.get_with_hints((out_dim, in_dim), "weight", init_ws)?;
+    println!(
+        "Time for creating Tensor {:?}",
+        start.elapsed().as_secs_f64()
+    );
     Ok(Linear::new(ws, None))
 }
