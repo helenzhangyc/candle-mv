@@ -2,6 +2,8 @@ use crate::backend::BackendDevice;
 use crate::cpu_backend::CpuDevice;
 use crate::{CpuStorage, DType, Result, Shape, Storage, WithDType};
 
+use std::time::{Duration, Instant};
+
 /// A `DeviceLocation` represents a physical device whereas multiple `Device`
 /// can live on the same location (typically for cuda devices).
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -293,8 +295,19 @@ impl Device {
         match self {
             Device::Cpu => Ok(Storage::Cpu(array.to_cpu_storage())),
             Device::Cuda(device) => {
+                let mut cpu_start = Instant::now();
                 let storage = array.to_cpu_storage();
+                println!(
+                    "Time to load onto cpu {:?}",
+                    cpu_start.elapsed().as_secs_f64()
+                );
+
+                cpu_start = Instant::now();
                 let storage = device.storage_from_cpu_storage(&storage)?;
+                println!(
+                    "Time to load from cpu to gpu {:?}",
+                    cpu_start.elapsed().as_secs_f64()
+                );
                 Ok(Storage::Cuda(storage))
             }
             Device::Metal(device) => {
