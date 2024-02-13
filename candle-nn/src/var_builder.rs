@@ -144,12 +144,7 @@ impl<'a, B: Backend> VarBuilderArgs<'a, B> {
 
     /// Short alias for `push_prefix`.
     pub fn pp<S: ToString>(&self, s: S) -> Self {
-        let tmp_time = Instant::now();
         let a = self.push_prefix(s);
-        println!(
-            "Time for push prefix {:?}",
-            tmp_time.elapsed().as_secs_f64()
-        );
         return a;
     }
 

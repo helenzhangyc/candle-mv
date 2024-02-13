@@ -239,12 +239,7 @@ pub fn load<P: AsRef<Path>>(filename: P, device: &Device) -> Result<HashMap<Stri
 }
 
 pub fn load_buffer(data: &[u8], device: &Device) -> Result<HashMap<String, Tensor>> {
-    let mut start = Instant::now();
     let st = safetensors::SafeTensors::deserialize(data)?;
-    println!(
-        "Time for deserialization{:?}",
-        start.elapsed().as_secs_f64()
-    );
     st.tensors()
         .into_iter()
         .map(|(name, view)| Ok((name, view.load(device)?)))

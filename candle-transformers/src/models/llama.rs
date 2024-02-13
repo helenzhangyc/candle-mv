@@ -293,12 +293,6 @@ impl CausalSelfAttention {
         let k_proj = linear(size_in, size_kv, vb.pp("k_proj"))?;
         let v_proj = linear(size_in, size_kv, vb.pp("v_proj"))?;
         let o_proj = linear(size_q, size_in, vb.pp("o_proj"))?;
-
-        let start_time = Instant::now(); // Start measuring time
-        let cache_clone = cache.clone(); // Measure the time for cloning the cache
-        let elapsed = start_time.elapsed().as_secs_f64();
-        println!("cache clone time {:?}", elapsed);
-
         Ok(Self {
             q_proj,
             k_proj,
@@ -307,8 +301,7 @@ impl CausalSelfAttention {
             num_attention_heads: cfg.num_attention_heads,
             num_key_value_heads: cfg.num_key_value_heads,
             head_dim: cfg.hidden_size / cfg.num_attention_heads,
-            // cache: cache.clone(),
-            cache: cache_clone,
+            cache: cache.clone(),
             use_flash_attn: cfg.use_flash_attn,
             span,
             span_rot,
@@ -373,42 +366,15 @@ impl Block {
     }
 
     fn load(vb: VarBuilder, cache: &Cache, cfg: &Config) -> Result<Self> {
-        let mut tmp_time = Instant::now();
         let span = tracing::span!(tracing::Level::TRACE, "block");
-        println!(
-            "Time for initialize span {:?}",
-            tmp_time.elapsed().as_secs_f64()
-        );
-
-        tmp_time = Instant::now();
         let attn = CausalSelfAttention::load(vb.pp("self_attn"), cache, cfg)?;
-        println!(
-            "Time for initialize attn {:?}",
-            tmp_time.elapsed().as_secs_f64()
-        );
-
-        tmp_time = Instant::now();
         let mlp = Mlp::load(vb.pp("mlp"), cfg)?;
-        println!("Time for mlp load {:?}", tmp_time.elapsed().as_secs_f64());
-
-        tmp_time = Instant::now();
         let rms_1 = RmsNorm::load(cfg.hidden_size, cfg.rms_norm_eps, vb.pp("input_layernorm"))?;
-        println!(
-            "Time for rmsnorm load 1 {:?}",
-            tmp_time.elapsed().as_secs_f64()
-        );
-
-        tmp_time = Instant::now();
         let rms_2 = RmsNorm::load(
             cfg.hidden_size,
             cfg.rms_norm_eps,
             vb.pp("post_attention_layernorm"),
         )?;
-        println!(
-            "Time for rmsnorm load 2 {:?}",
-            tmp_time.elapsed().as_secs_f64()
-        );
-
         Ok(Self {
             rms_1,
             attn,
@@ -440,36 +406,12 @@ impl Llama {
     }
 
     pub fn load(vb: VarBuilder, cache: &Cache, cfg: &Config) -> Result<Self> {
-        let mut tmp_time = Instant::now();
         let wte = embedding(cfg.vocab_size, cfg.hidden_size, vb.pp("model.embed_tokens"))?;
-        println!(
-            "Time to initialize wte {:?}",
-            tmp_time.elapsed().as_secs_f64()
-        );
-
-        tmp_time = Instant::now();
         let lm_head = linear(cfg.hidden_size, cfg.vocab_size, vb.pp("lm_head"))?;
-        println!(
-            "Time to initialize lm_head {:?}",
-            tmp_time.elapsed().as_secs_f64()
-        );
-
-        tmp_time = Instant::now();
         let ln_f = RmsNorm::load(cfg.hidden_size, cfg.rms_norm_eps, vb.pp("model.norm"))?;
-        println!(
-            "Time to initialize ln_f {:?}",
-            tmp_time.elapsed().as_secs_f64()
-        );
-
-        tmp_time = Instant::now();
         let blocks: Vec<_> = (0..cfg.num_hidden_layers)
             .map(|i| Block::load(vb.pp(&format!("model.layers.{i}")), cache, cfg).unwrap())
             .collect();
-        println!(
-            "Time to initialize blocks {:?}",
-            tmp_time.elapsed().as_secs_f64()
-        );
-
         Ok(Self {
             wte,
             blocks,
