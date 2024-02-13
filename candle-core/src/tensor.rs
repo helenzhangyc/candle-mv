@@ -6,6 +6,7 @@ use crate::op::{
 };
 use crate::scalar::TensorOrScalar;
 use crate::shape::{Dim, Dims};
+use crate::storage;
 use crate::{bail, storage::Storage, DType, Device, Error, Layout, Result, Shape};
 use std::sync::{Arc, RwLock};
 
@@ -350,9 +351,17 @@ impl Tensor {
         if buffer_size != n {
             return Err(Error::ShapeMismatch { buffer_size, shape }.bt());
         }
-        let storage = device.storage(array)?;
-        let none = BackpropOp::none();
-        Ok(from_storage(storage, shape, none, is_variable))
+        // let storage = device.storage(array)?;
+        if device.is_cpu() {
+            println!("device is cpu");
+            let storage = Storage::Cpu(array.to_cpu_storage());
+            let none = BackpropOp::none();
+            Ok(from_storage(storage, shape, none, is_variable))
+        } else {
+            let storage = device.storage(array)?;
+            let none = BackpropOp::none();
+            Ok(from_storage(storage, shape, none, is_variable))
+        }
     }
 
     /// Creates a new tensor on the specified device using the content and shape of the input.
