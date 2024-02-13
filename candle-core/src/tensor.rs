@@ -350,9 +350,15 @@ impl Tensor {
         if buffer_size != n {
             return Err(Error::ShapeMismatch { buffer_size, shape }.bt());
         }
-        let storage = device.storage(array)?;
-        let none = BackpropOp::none();
-        Ok(from_storage(storage, shape, none, is_variable))
+        if device.is_cpu() {
+            let storage = Storage::Cpu(array.to_cpu_storage());
+            let none = BackpropOp::none();
+            Ok(from_storage(storage, shape, none, is_variable))
+        } else {
+            let storage = device.storage(array)?;
+            let none = BackpropOp::none();
+            Ok(from_storage(storage, shape, none, is_variable))
+        }
     }
 
     /// Creates a new tensor on the specified device using the content and shape of the input.
