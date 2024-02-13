@@ -90,12 +90,14 @@ fn convert_slice<T: WithDType>(data: &[u8], shape: &[usize], device: &Device) ->
     let size_in_bytes = T::DTYPE.size_in_bytes();
     let elem_count = data.len() / size_in_bytes;
     if (data.as_ptr() as usize) % size_in_bytes == 0 {
+        println!("convert slice if");
         // SAFETY This is safe because we just checked that this
         // was correctly aligned.
         let data: &[T] =
             unsafe { std::slice::from_raw_parts(data.as_ptr() as *const T, elem_count) };
         Tensor::from_slice(data, shape, device)
     } else {
+        println!("convert slice else");
         // XXX: We need to specify `T` here, otherwise the compiler will infer u8 because of the following cast
         // Making this vector too small to fit a full f16/f32/f64 weights, resulting in out-of-bounds access
         let mut c: Vec<T> = Vec::with_capacity(elem_count);
