@@ -1713,37 +1713,37 @@ impl BackendStorage for CudaStorage {
             CudaStorageSlice::U8(slice) => {
                 let dev = slice.device();
                 let cpu_storage = dev.dtoh_sync_copy(slice).w()?;
-                Ok(CpuStorage::U8(cpu_storage))
+                Ok(Cow::Owned(CpuStorage::U8(cpu_storage)))
             }
             CudaStorageSlice::U32(slice) => {
                 let dev = slice.device();
                 let cpu_storage = dev.dtoh_sync_copy(slice).w()?;
-                Ok(CpuStorage::U32(cpu_storage))
+                Ok(Cow::Owned(CpuStorage::U32(cpu_storage)))
             }
             CudaStorageSlice::I64(slice) => {
                 let dev = slice.device();
                 let cpu_storage = dev.dtoh_sync_copy(slice).w()?;
-                Ok(CpuStorage::I64(cpu_storage))
+                Ok(Cow::Owned(CpuStorage::I64(cpu_storage)))
             }
             CudaStorageSlice::BF16(slice) => {
                 let dev = slice.device();
                 let cpu_storage = dev.dtoh_sync_copy(slice).w()?;
-                Ok(CpuStorage::BF16(cpu_storage))
+                Ok(Cow::Owned(CpuStorage::BF16(cpu_storage)))
             }
             CudaStorageSlice::F16(slice) => {
                 let dev = slice.device();
                 let cpu_storage = dev.dtoh_sync_copy(slice).w()?;
-                Ok(CpuStorage::F16(cpu_storage))
+                Ok(Cow::Owned(CpuStorage::F16(cpu_storage)))
             }
             CudaStorageSlice::F32(slice) => {
                 let dev = slice.device();
                 let cpu_storage = dev.dtoh_sync_copy(slice).w()?;
-                Ok(CpuStorage::F32(cpu_storage))
+                Ok(Cow::Owned(CpuStorage::F32(cpu_storage)))
             }
             CudaStorageSlice::F64(slice) => {
                 let dev = slice.device();
                 let cpu_storage = dev.dtoh_sync_copy(slice).w()?;
-                Ok(CpuStorage::F64(cpu_storage))
+                Ok(Cow::Owned(CpuStorage::F64(cpu_storage)))
             }
         }
     }
