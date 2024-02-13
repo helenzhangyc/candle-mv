@@ -32,6 +32,7 @@ impl<S: WithDType> NdArray for S {
     }
 
     fn to_cpu_storage(&self) -> CpuStorage {
+        println!("to_cpu_storage S");
         S::to_cpu_storage(&[*self])
     }
 }
@@ -42,6 +43,7 @@ impl<S: WithDType, const N: usize> NdArray for &[S; N] {
     }
 
     fn to_cpu_storage(&self) -> CpuStorage {
+        println!("to_cpu_storage &[S; N]");
         S::to_cpu_storage(self.as_slice())
     }
 }
@@ -52,6 +54,7 @@ impl<S: WithDType> NdArray for &[S] {
     }
 
     fn to_cpu_storage(&self) -> CpuStorage {
+        println!("to_cpu_storage &[S]");
         S::to_cpu_storage(self)
     }
 }
@@ -62,6 +65,7 @@ impl<S: WithDType, const N: usize, const M: usize> NdArray for &[[S; N]; M] {
     }
 
     fn to_cpu_storage(&self) -> CpuStorage {
+        println!("to_cpu_storage &[[S; N]; M]");
         S::to_cpu_storage_owned(self.concat())
     }
 }
@@ -74,6 +78,7 @@ impl<S: WithDType, const N1: usize, const N2: usize, const N3: usize> NdArray
     }
 
     fn to_cpu_storage(&self) -> CpuStorage {
+        println!("to_cpu_storage &[[[S; N3]; N2]; N1]");
         let mut vec = Vec::with_capacity(N1 * N2 * N3);
         for i1 in 0..N1 {
             for i2 in 0..N2 {
@@ -92,6 +97,7 @@ impl<S: WithDType, const N1: usize, const N2: usize, const N3: usize, const N4: 
     }
 
     fn to_cpu_storage(&self) -> CpuStorage {
+        println!("to_cpu_storage &[[[[S; N4]; N3]; N2]; N1]");
         let mut vec = Vec::with_capacity(N1 * N2 * N3 * N4);
         for i1 in 0..N1 {
             for i2 in 0..N2 {
@@ -122,7 +128,6 @@ impl<S: NdArray> NdArray for Vec<S> {
 
     fn to_cpu_storage(&self) -> CpuStorage {
         // This allocates intermediary memory and shouldn't be necessary.
-        println!("This allocates intermediary memory and shouldn't be necessary.");
         let storages = self.iter().map(|v| v.to_cpu_storage()).collect::<Vec<_>>();
         CpuStorage::concat(storages.as_slice()).unwrap()
     }
