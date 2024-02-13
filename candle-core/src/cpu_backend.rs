@@ -2660,7 +2660,7 @@ impl BackendStorage for CpuStorage {
     }
 
     fn to_cpu_storage(&self) -> Result<Cow<'_, CpuStorage>> {
-        let owned_cpu_storage: Cow<CpuStorage> = Cow::Owned(self.clone());
+        let owned_cpu_storage: Cow<CpuStorage> = Cow::Borrowed(self);
         Ok(owned_cpu_storage)
     }
 }
