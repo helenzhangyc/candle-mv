@@ -353,7 +353,6 @@ impl Tensor {
         }
         // let storage = device.storage(array)?;
         if device.is_cpu() {
-            println!("device is cpu");
             let storage = Storage::Cpu(array.to_cpu_storage());
             let none = BackpropOp::none();
             Ok(from_storage(storage, shape, none, is_variable))
