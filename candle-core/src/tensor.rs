@@ -538,8 +538,8 @@ impl Tensor {
         };
         match &*self.storage() {
             Storage::Cpu(cpu_storage) => from_cpu_storage(cpu_storage),
-            Storage::Cuda(storage) => from_cpu_storage(&storage.to_cpu_storage()?),
-            Storage::Metal(storage) => from_cpu_storage(&storage.to_cpu_storage()?),
+            Storage::Cuda(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
+            Storage::Metal(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
         }
     }
 
@@ -1488,8 +1488,8 @@ impl Tensor {
         };
         match &*self.storage() {
             Storage::Cpu(storage) => from_cpu_storage(storage),
-            Storage::Cuda(storage) => from_cpu_storage(&storage.to_cpu_storage()?),
-            Storage::Metal(storage) => from_cpu_storage(&storage.to_cpu_storage()?),
+            Storage::Cuda(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
+            Storage::Metal(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
         }
     }
 
@@ -1519,8 +1519,8 @@ impl Tensor {
         };
         match &*self.storage() {
             Storage::Cpu(storage) => from_cpu_storage(storage),
-            Storage::Cuda(storage) => from_cpu_storage(&storage.to_cpu_storage()?),
-            Storage::Metal(storage) => from_cpu_storage(&storage.to_cpu_storage()?),
+            Storage::Cuda(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
+            Storage::Metal(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
         }
     }
 
@@ -1560,8 +1560,8 @@ impl Tensor {
         };
         match &*self.storage() {
             Storage::Cpu(storage) => from_cpu_storage(storage),
-            Storage::Cuda(storage) => from_cpu_storage(&storage.to_cpu_storage()?),
-            Storage::Metal(storage) => from_cpu_storage(&storage.to_cpu_storage()?),
+            Storage::Cuda(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
+            Storage::Metal(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
         }
     }
 
@@ -1882,8 +1882,12 @@ impl Tensor {
                 (Storage::Cpu(storage), Device::Metal(metal)) => {
                     Storage::Metal(metal.storage_from_cpu_storage(storage)?)
                 }
-                (Storage::Cuda(storage), Device::Cpu) => Storage::Cpu(storage.to_cpu_storage()?),
-                (Storage::Metal(storage), Device::Cpu) => Storage::Cpu(storage.to_cpu_storage()?),
+                (Storage::Cuda(storage), Device::Cpu) => {
+                    Storage::Cpu(storage.to_cpu_storage()?.into_owned())
+                }
+                (Storage::Metal(storage), Device::Cpu) => {
+                    Storage::Cpu(storage.to_cpu_storage()?.into_owned())
+                }
                 (Storage::Cuda(storage), Device::Cuda(cuda)) => {
                     // TODO: Avoid passing through the cpu storage here, especially if the gpu ids
                     // are the same.

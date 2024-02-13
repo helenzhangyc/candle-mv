@@ -4,6 +4,8 @@ use crate::{DType, Error, IntDType, Layout, Result, Shape, WithDType};
 use half::{bf16, f16};
 use rayon::prelude::*;
 
+use std::borrow::Cow;
+
 const USE_IM2COL_CONV1D: bool = true;
 const USE_IM2COL_CONV2D: bool = true;
 
@@ -2657,8 +2659,9 @@ impl BackendStorage for CpuStorage {
         Ok(self.clone())
     }
 
-    fn to_cpu_storage(&self) -> Result<CpuStorage> {
-        Ok(self.clone())
+    fn to_cpu_storage(&self) -> Result<Cow<'_, CpuStorage>> {
+        let owned_cpu_storage: Cow<CpuStorage> = Cow::Owned(self.clone());
+        Ok(owned_cpu_storage)
     }
 }
 
