@@ -11,6 +11,8 @@ use cudarc::driver::{
 use half::{bf16, f16};
 use std::sync::{Arc, Mutex};
 
+use std::borrow::Cow;
+
 /// cudarc related errors
 #[derive(thiserror::Error, Debug)]
 pub enum CudaError {
@@ -1706,7 +1708,7 @@ impl BackendStorage for CudaStorage {
         Ok(Self { slice, device })
     }
 
-    fn to_cpu_storage(&self) -> Result<CpuStorage> {
+    fn to_cpu_storage(&self) -> Result<Cow<'_, CpuStorage>> {
         match &self.slice {
             CudaStorageSlice::U8(slice) => {
                 let dev = slice.device();
