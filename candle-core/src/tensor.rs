@@ -1496,8 +1496,15 @@ impl Tensor {
         };
         match &*self.storage() {
             Storage::Cpu(storage) => from_cpu_storage(storage),
-            Storage::Cuda(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
-            Storage::Metal(storage) => from_cpu_storage(&storage.to_cpu_storage()?.into_owned()),
+            Storage::Cuda(storage) => {
+                let cloned_storage = storage.clone(); // Clone the storage
+                from_cpu_storage(&cloned_storage.to_cpu_storage()?.into_owned())
+                // Pass the cloned storage
+            }
+            Storage::Metal(storage) => {
+                let cloned_storage = storage.clone(); // Similarly, clone for Metal storage
+                from_cpu_storage(&cloned_storage.to_cpu_storage()?.into_owned())
+            }
         }
     }
 

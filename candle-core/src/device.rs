@@ -32,7 +32,7 @@ impl<S: WithDType> NdArray for S {
     }
 
     fn to_cpu_storage(&self) -> CpuStorage {
-        println!("to_cpu_storage S");
+        // println!("to_cpu_storage S");
         S::to_cpu_storage(&[*self])
     }
 }
@@ -54,7 +54,7 @@ impl<S: WithDType> NdArray for &[S] {
     }
 
     fn to_cpu_storage(&self) -> CpuStorage {
-        println!("to_cpu_storage &[S]");
+        // println!("to_cpu_storage &[S]");
         S::to_cpu_storage(self)
     }
 }
