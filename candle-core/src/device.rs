@@ -122,6 +122,7 @@ impl<S: NdArray> NdArray for Vec<S> {
 
     fn to_cpu_storage(&self) -> CpuStorage {
         // This allocates intermediary memory and shouldn't be necessary.
+        println!("This allocates intermediary memory and shouldn't be necessary.");
         let storages = self.iter().map(|v| v.to_cpu_storage()).collect::<Vec<_>>();
         CpuStorage::concat(storages.as_slice()).unwrap()
     }
