@@ -1,7 +1,6 @@
 use super::with_tracing::{linear_no_bias as linear, Linear};
 use candle::{DType, Device, IndexOp, Result, Tensor, D};
 use candle_nn::{embedding, Embedding, Module, VarBuilder};
-use serde::Deserialize;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -9,7 +8,7 @@ use std::time::{Duration, Instant};
 
 pub const MAX_SEQ_LEN: usize = 4096;
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct LlamaConfig {
     pub hidden_size: usize,
     pub intermediate_size: usize,
@@ -42,6 +41,7 @@ impl LlamaConfig {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Config {
     pub hidden_size: usize,
     pub intermediate_size: usize,
@@ -84,7 +84,7 @@ impl Config {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Cache {
     masks: Arc<Mutex<HashMap<usize, Tensor>>>,
     pub use_kv_cache: bool,
@@ -138,6 +138,7 @@ impl Cache {
     }
 }
 
+#[derive(Debug, Clone)]
 struct RmsNorm {
     inner: candle_nn::RmsNorm,
     span: tracing::Span,
@@ -156,6 +157,7 @@ impl RmsNorm {
     }
 }
 
+#[derive(Debug, Clone)]
 struct CausalSelfAttention {
     q_proj: Linear,
     k_proj: Linear,
@@ -316,6 +318,7 @@ fn masked_fill(on_false: &Tensor, mask: &Tensor, on_true: f32) -> Result<Tensor>
     Ok(m)
 }
 
+#[derive(Debug, Clone)]
 struct Mlp {
     c_fc1: Linear,
     c_fc2: Linear,
@@ -346,6 +349,7 @@ impl Mlp {
     }
 }
 
+#[derive(Debug, Clone)]
 struct Block {
     rms_1: RmsNorm,
     attn: CausalSelfAttention,
@@ -385,6 +389,7 @@ impl Block {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Llama {
     wte: Embedding,
     blocks: Vec<Block>,
